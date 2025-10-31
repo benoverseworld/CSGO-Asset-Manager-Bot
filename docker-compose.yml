@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  bot:
+    build: .
+    container_name: csgo-asset-bot
+    restart: unless-stopped
+    env_file:
+      - .env
+    depends_on:
+      - postgres
+      - redis
+    volumes:
+      - ./logs:/app/logs
+      - ./data:/app/data
+    networks:
+      - csgo-network
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: csgo-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: csgo_assets
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - csgo-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: csgo-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - csgo-network
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  csgo-network:
+    driver: bridge
